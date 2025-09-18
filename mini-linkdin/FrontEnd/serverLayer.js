@@ -52,7 +52,7 @@ export const loginHandling = async (email, password) => {
       credentials: 'include',
     });
     const data = await res.json();
-    console.log(data);
+    // console.log(data);
 
     return data;
   } catch (error) {
@@ -69,6 +69,7 @@ export const loginStatusHandling = async () => {
     });
 
     const data = await res.json();
+    console.log(data);
 
     return data;
   } catch (error) {

@@ -18,6 +18,8 @@ const Login = () => {
     e.preventDefault();
     setSubmit(true);
     const response = await loginHandling(email, password);
+    console.log(response);
+    
     setSubmit(false);
     if (response.status == 200) {
       navigate('/');
