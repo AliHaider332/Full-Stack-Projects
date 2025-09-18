@@ -23,7 +23,6 @@ const Login = () => {
       navigate('/');
       toast.success('🎉 Login Successfully!');
       setLoginStatus(true);
-      location.reload();
     } else {
       toast.error(response.message);
     }
