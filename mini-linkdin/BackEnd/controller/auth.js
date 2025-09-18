@@ -171,15 +171,9 @@ exports.userLogInController = async (req, res) => {
     return res.status(200).json({
       status: 200,
       message: 'Successfully Logged In',
-      user: {
-        id: LoginUser._id,
-        email: LoginUser.email,
-        name: LoginUser.name,
-        pic: LoginUser.pic?.url || null,
-      },
+      user: req.session.user,
       loggedIn: true,
     });
-    
   } catch (error) {
     console.error('Login error:', error);
     return res

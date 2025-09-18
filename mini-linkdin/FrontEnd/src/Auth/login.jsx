@@ -7,7 +7,8 @@ import { useContext } from 'react';
 import { appContext } from '../components/appContext';
 
 const Login = () => {
-  const { loginStatus, setLoginStatus, logOut } = useContext(appContext);
+  const { loginStatus, setLoginStatus, logOut, setUser } =
+    useContext(appContext);
   const [showPassword, setShowPassword] = useState(false);
   const [submit, setSubmit] = useState(false);
   const navigate = useNavigate();
@@ -19,12 +20,13 @@ const Login = () => {
     setSubmit(true);
     const response = await loginHandling(email, password);
     console.log(response);
-    
+
     setSubmit(false);
     if (response.status == 200) {
       navigate('/');
       toast.success('🎉 Login Successfully!');
-      setLoginStatus(true);
+      setUser(response.user);
+      setLoginStatus(response.loggedIn);
     } else {
       toast.error(response.message);
     }
