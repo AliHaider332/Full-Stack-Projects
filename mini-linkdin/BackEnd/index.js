@@ -55,6 +55,12 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: store,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true for Vercel
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
   })
 );
 
