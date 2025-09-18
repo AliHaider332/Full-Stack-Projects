@@ -1,16 +1,13 @@
-// app.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 require('dotenv').config();
-const path = require('path');
-const mongoConnect = require('connect-mongo');
-const { cloudinaryConfig } = require('./util/cloudinary');
-
-const DB_URL = process.env.DB_URL;
-
+const path = require('path'); // <- add this
 const app = express();
+const Port = process.env.PORT;
+const mongoConnect = require('connect-mongo');
+const DB_URL = process.env.DB_URL;
 
 // Routers
 const { userSignInRouter } = require('./routers/userSignIn');
@@ -30,8 +27,10 @@ const { myPostRouter } = require('./routers/myPost');
 const { deletePostRouter } = require('./routers/deletePost');
 const { getForEditPostRouter } = require('./routers/getForEditPost');
 const { updatePostRoute } = require('./routers/updatePost');
+const { cloudinary, cloudinaryConfig } = require('./util/cloudinary');
 
-// Mongo store
+app.use('/upload', express.static(path.join(__dirname, 'upload')));
+
 const store = mongoConnect.create({
   mongoUrl: DB_URL,
   collectionName: 'task-Session',
@@ -65,6 +64,8 @@ app.use(
   })
 );
 
+// Serve upload folder
+app.use('/upload', express.static(path.join(__dirname, 'upload')));
 // API routes
 app.use('/api', userSignInRouter);
 app.use('/api', userLogInRouter);
@@ -83,19 +84,15 @@ app.use('/api', myPostRouter);
 app.use('/api', deletePostRouter);
 app.use('/api', getForEditPostRouter);
 app.use('/api', updatePostRoute);
-
-// 404 fallback
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  res.send('404');
 });
 
-// Init cloudinary + db connection
+// Connect DB and start server
 mongoose
   .connect(DB_URL)
   .then(() => {
     cloudinaryConfig();
-    console.log('✅ MongoDB connected');
+    app.listen(Port);
   })
   .catch((err) => console.error('DB connection error:', err));
-
-
