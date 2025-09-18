@@ -29,6 +29,8 @@ const { getForEditPostRouter } = require('./routers/getForEditPost');
 const { updatePostRoute } = require('./routers/updatePost');
 const { cloudinary, cloudinaryConfig } = require('./util/cloudinary');
 
+app.use('/upload', express.static(path.join(__dirname, 'upload')));
+
 const store = mongoConnect.create({
   mongoUrl: DB_URL,
   collectionName: 'task-Session',
