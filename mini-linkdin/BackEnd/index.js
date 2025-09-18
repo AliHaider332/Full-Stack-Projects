@@ -1,13 +1,16 @@
+// app.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 require('dotenv').config();
-const path = require('path'); // <- add this
-const app = express();
-const Port = process.env.PORT;
+const path = require('path');
 const mongoConnect = require('connect-mongo');
+const { cloudinaryConfig } = require('./util/cloudinary');
+
 const DB_URL = process.env.DB_URL;
+
+const app = express();
 
 // Routers
 const { userSignInRouter } = require('./routers/userSignIn');
@@ -27,10 +30,8 @@ const { myPostRouter } = require('./routers/myPost');
 const { deletePostRouter } = require('./routers/deletePost');
 const { getForEditPostRouter } = require('./routers/getForEditPost');
 const { updatePostRoute } = require('./routers/updatePost');
-const { cloudinary, cloudinaryConfig } = require('./util/cloudinary');
 
-app.use('/upload', express.static(path.join(__dirname, 'upload')));
-
+// Mongo store
 const store = mongoConnect.create({
   mongoUrl: DB_URL,
   collectionName: 'task-Session',
@@ -54,17 +55,16 @@ app.use(
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,
-    store: store,
+    store,
     cookie: {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
 
-// Serve upload folder
-app.use('/upload', express.static(path.join(__dirname, 'upload')));
 // API routes
 app.use('/api', userSignInRouter);
 app.use('/api', userLogInRouter);
@@ -83,15 +83,19 @@ app.use('/api', myPostRouter);
 app.use('/api', deletePostRouter);
 app.use('/api', getForEditPostRouter);
 app.use('/api', updatePostRoute);
+
+// 404 fallback
 app.use((req, res) => {
-  res.send('404');
+  res.status(404).json({ error: 'Route not found' });
 });
 
-// Connect DB and start server
+// Init cloudinary + db connection
 mongoose
   .connect(DB_URL)
   .then(() => {
     cloudinaryConfig();
-    app.listen(Port);
+    console.log('✅ MongoDB connected');
   })
   .catch((err) => console.error('DB connection error:', err));
+
+
