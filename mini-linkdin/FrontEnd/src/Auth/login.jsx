@@ -9,13 +9,16 @@ import { appContext } from '../components/appContext';
 const Login = () => {
   const { loginStatus, setLoginStatus, logOut } = useContext(appContext);
   const [showPassword, setShowPassword] = useState(false);
+  const [submit, setSubmit] = useState(false);
   const navigate = useNavigate();
   const email = useRef(null);
   const password = useRef(null);
 
   async function formSubmite(e) {
     e.preventDefault();
+    setSubmit(true);
     const response = await loginHandling(email, password);
+    setSubmit(false);
     if (response.status == 200) {
       navigate('/');
       toast.success('🎉 Login Successfully!');
@@ -78,9 +81,42 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2 rounded-lg font-medium transition transform hover:scale-105 Prompt cursor-pointer "
+              disabled={submit}
+              className={`w-full flex items-center justify-center text-white py-2 rounded-lg font-medium transition transform hover:scale-105 Prompt
+    ${
+      submit
+        ? 'bg-cyan-300 cursor-not-allowed'
+        : 'bg-cyan-500 hover:bg-cyan-600'
+    }
+  `}
             >
-              Login
+              {submit ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  Information Checking
+                </>
+              ) : (
+                'Login'
+              )}
             </button>
           </form>
 

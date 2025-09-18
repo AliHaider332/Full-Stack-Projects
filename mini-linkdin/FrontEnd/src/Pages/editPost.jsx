@@ -16,6 +16,8 @@ const EditPost = () => {
   const [previewPic, setPreviewPic] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
 
+  const [submitting, setSubmitting] = useState(false); // ✅ loading state
+
   const navigate = useNavigate();
 
   // ✅ Initialize form with editData
@@ -23,21 +25,13 @@ const EditPost = () => {
     if (editData) {
       setTitle(editData.title || '');
       setDescription(editData.description || '');
-      
-      
       setTags(
         Array.isArray(editData.tags)
-          ? editData.tags.map(tag => `#${tag}`).join('')
+          ? editData.tags.map((tag) => `#${tag}`).join('')
           : editData.tags || ''
       );
-      
-
-      if (editData.pic) {
-        setPreviewPic(editData.pic.url);
-      }
-      if (editData.video) {
-        setPreviewVideo(editData.video.url);
-      }
+      if (editData.pic) setPreviewPic(editData.pic.url);
+      if (editData.video) setPreviewVideo(editData.video.url);
     }
   }, [editData]);
 
@@ -62,6 +56,7 @@ const EditPost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true); // ✅ start loading
 
     const formattedTags = tags
       .split('#')
@@ -69,13 +64,15 @@ const EditPost = () => {
       .filter((t) => t.length > 0);
 
     const result = await updatePost(
-      editData._id, // ✅ must send post ID
+      editData._id,
       title,
       description,
       formattedTags,
       pic,
       video
     );
+
+    setSubmitting(false); // ✅ stop loading
 
     if (result?.status === 200) {
       toast.success('✅ Post updated successfully!');
@@ -89,10 +86,7 @@ const EditPost = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-900">
         <div className="relative w-20 h-20">
-          {/* Outer Ring */}
           <div className="absolute inset-0 rounded-full border-4 border-slate-700 border-t-cyan-500 animate-spin"></div>
-
-          {/* Inner Pulse */}
           <div className="absolute inset-3 rounded-full bg-cyan-500 animate-pulse"></div>
         </div>
       </div>
@@ -177,7 +171,6 @@ const EditPost = () => {
                 className="hidden"
               />
             </div>
-
             {previewPic && (
               <img
                 src={previewPic}
@@ -207,10 +200,11 @@ const EditPost = () => {
                 className="hidden"
               />
               {video && (
-                <span className="text-gray-600 text-sm Roboto">{video.name}</span>
+                <span className="text-gray-600 text-sm Roboto">
+                  {video.name}
+                </span>
               )}
             </div>
-
             {previewVideo && (
               <video
                 controls
@@ -223,9 +217,42 @@ const EditPost = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white text-lg px-5 py-3 rounded-lg font-semibold transition cursor-pointer Prompt"
+            disabled={submitting}
+            className={`w-full flex items-center justify-center gap-2 text-white text-lg px-5 py-3 rounded-lg font-semibold transition cursor-pointer Prompt
+    ${
+      submitting
+        ? 'bg-cyan-300 cursor-not-allowed'
+        : 'bg-cyan-500 hover:bg-cyan-600'
+    }`}
           >
-            Save Post
+            {submitting ? (
+              <>
+                {/* Spinner */}
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              'Save Post'
+            )}
           </button>
         </form>
       </div>

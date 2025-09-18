@@ -1,9 +1,12 @@
+// controller/auth.js
 const USER = require('../module/dbSchema');
 const bcrypt = require('bcryptjs');
-const fs = require('fs');
 const { check, validationResult } = require('express-validator');
-const { cloudinary } = require('../util/cloudinary');
+const { uploadToCloudinary } = require('../util/cloudinary');
 
+// =============================
+// User Sign In (Registration)
+// =============================
 exports.userSignInController = [
   // 🔹 Name validation
   check('name')
@@ -79,7 +82,7 @@ exports.userSignInController = [
       }
 
       const { name, email, phone, address, password } = req.body;
-      const file = req.file; // multer single upload: field name should match frontend
+      const file = req.file; // multer single upload
 
       // Step 2: Check uniqueness
       const existingEmail = await USER.findOne({ email });
@@ -103,20 +106,15 @@ exports.userSignInController = [
       let picData = null;
       if (file) {
         try {
-          const result = await cloudinary.uploader.upload(file.path, {
-            folder: 'users/profile_pics',
-          });
-
-          fs.unlink(file.path, (err) => {
-            if (err) console.error('Error deleting local file:', err);
-          });
-
+          const result = await uploadToCloudinary(
+            file.buffer,
+            'users/profile_pics'
+          );
           picData = { url: result.secure_url, pic_id: result.public_id };
         } catch (err) {
           console.error('Profile picture upload failed:', err);
         }
       }
-      console.log(picData);
 
       // Step 5: Create user
       const user = new USER({
@@ -127,7 +125,6 @@ exports.userSignInController = [
         pic: picData,
         password: hashedPassword,
       });
-      console.log(user);
 
       await user.save();
 
@@ -143,10 +140,9 @@ exports.userSignInController = [
   },
 ];
 
-
-
-
-
+// =============================
+// User Login
+// =============================
 exports.userLogInController = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -164,7 +160,7 @@ exports.userLogInController = async (req, res) => {
     if (!isMatch) {
       return res
         .status(401)
-        .json({ status: 401, message: "Password don't match" });
+        .json({ status: 401, message: "Password doesn't match" });
     }
 
     // 3. Successful login
@@ -172,7 +168,7 @@ exports.userLogInController = async (req, res) => {
       id: LoginUser._id,
       email: LoginUser.email,
       name: LoginUser.name,
-      pic: LoginUser.pic.url,
+      pic: LoginUser.pic?.url || null,
     };
 
     return res.status(200).json({
@@ -187,6 +183,9 @@ exports.userLogInController = async (req, res) => {
   }
 };
 
+// =============================
+// Login Status
+// =============================
 exports.loginStatusController = (req, res) => {
   if (req.session.user) {
     return res.status(200).json({
@@ -201,6 +200,9 @@ exports.loginStatusController = (req, res) => {
   }
 };
 
+// =============================
+// Logout
+// =============================
 exports.logOutController = (req, res) => {
   if (req.session.user) {
     req.session.destroy((err) => {
@@ -208,7 +210,7 @@ exports.logOutController = (req, res) => {
         return res.status(500).json({ status: 500, message: 'Logout failed' });
       }
 
-      res.clearCookie('connect.sid'); // important: clears session cookie
+      res.clearCookie('connect.sid'); // clears session cookie
       return res
         .status(200)
         .json({ status: 200, message: 'Logged Out Successfully' });

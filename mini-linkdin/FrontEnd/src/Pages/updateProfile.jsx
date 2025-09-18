@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 const ProfileUpdate = () => {
   const { user, loginStatus, loading } = useContext(appContext);
   const [detail, setDetail] = useState(null);
+  const [submit, setSubmit] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -56,9 +57,7 @@ const ProfileUpdate = () => {
       });
 
       if (detail.pic) {
-        setPreviewPic(
-          detail.pic.url
-        );
+        setPreviewPic(detail.pic.url);
       }
     }
   }, [detail]);
@@ -75,7 +74,7 @@ const ProfileUpdate = () => {
   // Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setSubmit(true);
     const response = await updateProfile(
       user.id,
       formData.name,
@@ -86,7 +85,7 @@ const ProfileUpdate = () => {
       formData.confirmPassword,
       formData.picture
     );
-
+    setSubmit(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (response.status === 200) {
@@ -274,10 +273,42 @@ const ProfileUpdate = () => {
 
             <button
               type="submit"
-              className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2 rounded-lg 
-                         cursor-pointer font-medium transition transform hover:scale-105 Prompt"
+              disabled={submit}
+              className={`w-full flex items-center justify-center text-white py-2 rounded-lg font-medium transition transform hover:scale-105 Prompt
+                ${
+                  submit
+                    ? 'bg-cyan-300 cursor-not-allowed'
+                    : 'bg-cyan-500 hover:bg-cyan-600'
+                }
+              `}
             >
-              Save Changes
+              {submit ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
             </button>
           </form>
         </div>

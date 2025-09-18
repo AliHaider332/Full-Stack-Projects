@@ -2,7 +2,7 @@ const USER = require('../module/dbSchema');
 const fs = require('fs').promises;
 const bcrypt = require('bcryptjs');
 const path = require('path');
-const {cloudinary}=require('../util/cloudinary')
+const { cloudinary, uploadToCloudinary } = require('../util/cloudinary');
 const { check, validationResult } = require('express-validator');
 exports.accountDetailController = async (req, res) => {
   try {
@@ -107,16 +107,10 @@ exports.profileUpdateController = [
           if (picData && picData.pic_id) {
             await cloudinary.uploader.destroy(picData.pic_id);
           }
-
-          // Upload new pic
-          const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: 'users/profile_pics',
-          });
-
-          // Delete temp file
-          fs.unlink(req.file.path, (err) => {
-            if (err) console.error('Error deleting local file:', err);
-          });
+          const result = await uploadToCloudinary(
+            req.file.buffer,
+            'users/profile_pics'
+          );
 
           // Replace pic data
           picData = { url: result.secure_url, pic_id: result.public_id };
@@ -199,4 +193,3 @@ exports.deleteAccountController = async (req, res) => {
     });
   }
 };
-

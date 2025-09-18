@@ -1,5 +1,5 @@
 const server = import.meta.env.VITE_SERVER;
-console.log("Server URL:", server);
+console.log('Server URL:', server);
 
 export const signInHandling = async (
   name,
@@ -352,7 +352,6 @@ export const getForEditPost = async (id) => {
     });
 
     const data = await res.json();
-    console.log(data);
 
     return data;
   } catch (error) {
@@ -380,7 +379,6 @@ export const updatePost = async (id, title, description, tags, pic, video) => {
     });
 
     const data = await res.json();
-    console.log(data);
 
     return data;
   } catch (error) {

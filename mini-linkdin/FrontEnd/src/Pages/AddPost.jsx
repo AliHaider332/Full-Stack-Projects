@@ -14,6 +14,8 @@ const AddPost = () => {
   const [tags, setTags] = useState('');
   const [previewPic, setPreviewPic] = useState(null);
   const [previewVideo, setPreviewVideo] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,7 +38,7 @@ const AddPost = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setSubmitting(true);
     const formattedTags = tags
       .split('#')
       .map((t) => t.trim())
@@ -50,6 +52,8 @@ const AddPost = () => {
       pic,
       video
     );
+
+    setSubmitting(false);
     if (result) {
       window.scrollTo({
         top: 0,
@@ -219,9 +223,42 @@ const AddPost = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white text-lg px-5 py-3 rounded-lg font-semibold transition cursor-pointer Prompt"
+            disabled={submitting}
+            className={`w-full flex items-center justify-center text-white text-lg px-5 py-3 rounded-lg font-semibold transition Prompt
+              ${
+                submitting
+                  ? 'bg-cyan-300 cursor-not-allowed'
+                  : 'bg-cyan-500 hover:bg-cyan-600'
+              }
+            `}
           >
-            🚀 Publish Post
+            {submitting ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Saving...
+              </>
+            ) : (
+              '🚀 Publish Post'
+            )}
           </button>
         </form>
       </div>

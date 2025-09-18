@@ -1,7 +1,11 @@
 const POST = require('../module/postShema');
 const fs = require('fs');
 const path = require('path');
-const { cloudinary } = require('../util/cloudinary');
+const {
+  cloudinary,
+  uploadToCloudinary,
+  uploadVideoToCloudinary,
+} = require('../util/cloudinary');
 exports.addPostController = async (req, res) => {
   try {
     const { author, title, description, tags } = req.body;
@@ -16,18 +20,13 @@ exports.addPostController = async (req, res) => {
 
     let picData = null;
     let videoData = null;
-
     // === Upload image ===
     if (postPic && postPic[0]) {
       try {
-        const result = await cloudinary.uploader.upload(postPic[0].path, {
-          folder: 'posts/images',
-        });
-
-        fs.unlink(postPic[0].path, (err) => {
-          if (err) console.error('Error deleting local image:', err);
-        });
-
+        const result = await uploadToCloudinary(
+          postPic[0].buffer,
+          'posts/images'
+        );
         picData = { url: result.secure_url, pic_id: result.public_id };
       } catch (err) {
         console.error('Image upload failed:', err);
@@ -37,14 +36,10 @@ exports.addPostController = async (req, res) => {
     // === Upload video ===
     if (video && video[0]) {
       try {
-        const result = await cloudinary.uploader.upload(video[0].path, {
-          folder: 'posts/videos',
-          resource_type: 'video',
-        });
-
-        fs.unlink(video[0].path, (err) => {
-          if (err) console.error('Error deleting local video:', err);
-        });
+        const result = await uploadVideoToCloudinary(
+          video[0].buffer,
+          'posts/videos'
+        );
 
         videoData = { url: result.secure_url, video_id: result.public_id };
       } catch (err) {
@@ -301,8 +296,6 @@ exports.deletePost = async (req, res) => {
   }
 };
 
-
-
 exports.findPostById = async (req, res) => {
   try {
     const { id } = req.body;
@@ -345,21 +338,16 @@ exports.updatePost = async (req, res) => {
       if (post.pic && post.pic.pic_id) {
         try {
           await cloudinary.uploader.destroy(post.pic.pic_id);
-          console.log('Old image deleted from Cloudinary');
         } catch (err) {
           console.error('Failed to delete old image:', err);
         }
       }
 
       // upload new image
-      const result = await cloudinary.uploader.upload(postPic[0].path, {
-        folder: 'posts/images',
-      });
-
-      // cleanup local file
-      fs.unlink(postPic[0].path, (err) => {
-        if (err) console.error('Error deleting local image:', err);
-      });
+      const result = await uploadToCloudinary(
+        postPic[0].buffer,
+        'posts/images'
+      );
 
       post.pic = { url: result.secure_url, pic_id: result.public_id };
     }
@@ -368,19 +356,14 @@ exports.updatePost = async (req, res) => {
 
     if (video && video[0]) {
       try {
-        const result = await cloudinary.uploader.upload(video[0].path, {
-          resource_type: 'video',
-          folder: 'posts/videos',
-          
-        });
+        const result = await uploadVideoToCloudinary(
+          video[0].buffer,
+          'posts/videos'
+        );
 
         if (result && result.secure_url) {
           post.video = { url: result.secure_url, video_id: result.public_id };
         }
-
-        fs.unlink(video[0].path, (err) => {
-          if (err) console.error('Error deleting local video:', err);
-        });
       } catch (err) {
         console.error('Video upload failed:', err);
       }
@@ -400,30 +383,3 @@ exports.updatePost = async (req, res) => {
     return res.status(500).json({ status: 500, message: 'Server error' });
   }
 };
-
-// if (video && video[0]) {
-//   const videoPath = path.resolve(video[0].path).replace(/\\/g, '/'); // ✅ Windows safe
-//   try {
-//     console.log('Uploading video from:', videoPath);
-
-//     const result = await cloudinary.uploader.upload(videoPath, {
-//       resource_type: 'video',
-//       folder: 'posts/videos',
-//     });
-
-//     console.log('Cloudinary video result:', result);
-
-//     if (result?.secure_url) {
-//       videoData = { url: result.secure_url, video_id: result.public_id };
-//       console.log('Video uploaded:', videoData);
-//     } else {
-//       console.error('❌ Video upload returned no result');
-//     }
-
-//     fs.unlink(videoPath, (err) => {
-//       if (err) console.error('Error deleting local video:', err);
-//     });
-//   } catch (err) {
-//     console.error('❌ Video upload failed:', err);
-//   }
-// }

@@ -15,6 +15,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [previewPic, setPreviewPic] = useState(null);
   const [fileName, setFileName] = useState('');
+  const [submit, setSubmit] = useState(false);
 
   const navigate = useNavigate();
 
@@ -32,7 +33,7 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setSubmit(true);
     const response = await signInHandling(
       name,
       email,
@@ -42,7 +43,7 @@ const Signup = () => {
       confirmPassword,
       picture
     );
-
+    setSubmit(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (response.status === 201) {
@@ -60,7 +61,7 @@ const Signup = () => {
     <div className="flex items-center justify-center min-h-screen bg-white text-gray-900">
       <div className="bg-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-200">
         <h2 className="text-3xl font-bold text-center mb-6 Caprasimo text-cyan-600">
-        Mini LinkdIn
+          Mini LinkdIn
         </h2>
         <h3 className="text-xl font-semibold text-center mb-6 Prompt text-gray-800">
           Create Account
@@ -87,7 +88,9 @@ const Signup = () => {
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium mb-1 Roboto">Email</label>
+            <label className="block text-sm font-medium mb-1 Roboto">
+              Email
+            </label>
             <input
               type="email"
               placeholder="Enter your email"
@@ -113,7 +116,9 @@ const Signup = () => {
 
           {/* Address */}
           <div>
-            <label className="block text-sm font-medium mb-1 Roboto">Address</label>
+            <label className="block text-sm font-medium mb-1 Roboto">
+              Address
+            </label>
             <textarea
               placeholder="Enter your address"
               ref={address}
@@ -157,7 +162,9 @@ const Signup = () => {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-medium mb-1 Roboto">Password</label>
+            <label className="block text-sm font-medium mb-1 Roboto">
+              Password
+            </label>
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Enter your password"
@@ -197,10 +204,42 @@ const Signup = () => {
 
           <button
             type="submit"
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white py-2 
-                       rounded-lg cursor-pointer font-medium transition transform hover:scale-105 Prompt"
+            disabled={submit}
+            className={`w-full flex items-center justify-center text-white py-2 rounded-lg font-medium transition transform hover:scale-105 Prompt
+    ${
+      submit
+        ? 'bg-cyan-300 cursor-not-allowed'
+        : 'bg-cyan-500 hover:bg-cyan-600'
+    }
+  `}
           >
-            Sign Up
+            {submit ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+                Uploading
+              </>
+            ) : (
+              'Sign Up'
+            )}
           </button>
         </form>
 

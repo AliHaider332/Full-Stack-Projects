@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2; // use v2 API
 require('dotenv').config();
+
 function cloudinaryConfig() {
   try {
     cloudinary.config({
@@ -10,8 +11,39 @@ function cloudinaryConfig() {
     });
   } catch (error) {
     console.log('cloudinary error', error);
-    console.log(error);
   }
 }
 
-module.exports = { cloudinary, cloudinaryConfig };
+// ✅ Upload buffer using stream
+const uploadToCloudinary = (buffer, folder) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+const uploadVideoToCloudinary = (buffer, folder) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'video' },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    stream.end(buffer);
+  });
+};
+
+module.exports = {
+  cloudinary,
+  cloudinaryConfig,
+  uploadToCloudinary,
+  uploadVideoToCloudinary,
+};

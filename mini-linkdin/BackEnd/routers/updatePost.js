@@ -5,19 +5,7 @@ const { updatePost } = require('../controller/posts');
 
 const updatePostRoute = express.Router();
 
-// Storage config for multer
-const postPicStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'upload/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-
-const uploadPostPic = multer({ storage: postPicStorage });
-
+const uploadPostPic = multer({ storage: multer.memoryStorage() });
 
 updatePostRoute.put(
   '/update-post',

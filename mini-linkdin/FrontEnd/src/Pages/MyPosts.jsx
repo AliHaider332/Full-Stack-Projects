@@ -1,32 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { PlusCircle } from 'lucide-react';
-import { useContext } from 'react';
 import { appContext } from '../components/appContext';
-import { useNavigate } from 'react-router-dom';
-import { myPost } from '../../serverLayer';
-import { deletePost } from '../../serverLayer';
+import { myPost, deletePost } from '../../serverLayer';
 
 const MyPosts = () => {
   const navigation = useNavigate();
   const { loginStatus, user, loading, fetchEditData } = useContext(appContext);
   const [posts, getAllPost] = useState(null);
+  const [fetching, setFetching] = useState(false); // extra loading state
+
   useEffect(() => {
-    // Redirect if not logged in
-    if (!loading) {
-      if (!loginStatus || !user) {
-        navigation('/login');
-        return;
-      }
+    if (!loading && (!loginStatus || !user)) {
+      navigation('/login');
+      return;
     }
 
-    // Fetch user posts
     async function getMyPost(id) {
       try {
-        const data = await myPost(id); // API call
+        setFetching(true);
+        const data = await myPost(id);
         getAllPost(data);
       } catch (error) {
         console.error('Error fetching posts:', error);
+      } finally {
+        setFetching(false);
       }
     }
 
@@ -40,22 +38,30 @@ const MyPosts = () => {
   }
 
   async function postDelete(id) {
-    await deletePost(id);
-    window.scrollTo(top);
-    const data = await myPost(user.id); // API call
-    getAllPost(data);
+    try {
+      setFetching(true);
+      await deletePost(id);
+      const data = await myPost(user.id);
+      getAllPost(data);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    } finally {
+      setFetching(false);
+    }
   }
+
   async function editPost(id) {
     fetchEditData(id);
     navigation('/edit-post');
   }
-  if (loading) {
+
+  // 🔄 Show spinner if fetching or initial loading
+  if (loading || fetching) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-slate-900">
         <div className="relative w-20 h-20">
           {/* Outer Ring */}
           <div className="absolute inset-0 rounded-full border-4 border-slate-700 border-t-cyan-500 animate-spin"></div>
-
           {/* Inner Pulse */}
           <div className="absolute inset-3 rounded-full bg-cyan-500 animate-pulse"></div>
         </div>
@@ -74,11 +80,8 @@ const MyPosts = () => {
 
       {/* Posts */}
       <div className="space-y-10">
-        {posts?.map((post, index) => (
-          <div
-            key={post._id}
-            className="bg-slate-800 rounded-2xl shadow-lg p-6"
-          >
+        {posts?.map((post) => (
+          <div key={post._id} className="bg-slate-800 rounded-2xl shadow-lg p-6">
             <h2 className="text-2xl font-semibold text-white mb-2 Roboto">
               {post.title}
             </h2>
@@ -135,23 +138,19 @@ const MyPosts = () => {
             <div className="flex gap-4">
               <button
                 className="bg-cyan-500 hover:bg-cyan-600 px-5 py-2 rounded-full font-medium Prompt transition transform hover:scale-105"
-                onClick={() => {
-                  editPost(post._id);
-                }}
+                onClick={() => editPost(post._id)}
               >
                 Edit
               </button>
               <button
                 className="bg-red-500 hover:bg-red-600 px-5 py-2 rounded-full font-medium Prompt transition transform hover:scale-105"
-                onClick={() => {
-                  postDelete(post._id);
-                }}
+                onClick={() => postDelete(post._id)}
               >
                 Delete
               </button>
             </div>
 
-            {/* Example Comments (static for now) */}
+            {/* Comments */}
             {post.comment.length > 0 && (
               <div className="mt-6 border-t border-slate-700 pt-4">
                 <p className="text-gray-400 mb-2">Comments</p>
@@ -161,14 +160,11 @@ const MyPosts = () => {
                       key={`${post._id}-comment-${index}`}
                       className="flex items-start gap-3 bg-slate-700 px-4 py-3 rounded-lg"
                     >
-                      {/* Commenter Pic */}
                       <img
                         src={item.pic ? item.pic : '/default-avatar.png'}
                         alt={item.name || 'User'}
                         className="w-10 h-10 rounded-full object-cover"
                       />
-
-                      {/* Comment Content */}
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-cyan-400">
                           {item.name || 'Anonymous'}
@@ -184,7 +180,7 @@ const MyPosts = () => {
         ))}
       </div>
 
-      {/* Floating Create Post Button (for mobile view) */}
+      {/* Floating Create Post Button */}
       <Link
         to="/post-create"
         className="fixed bottom-6 right-6 bg-cyan-500 hover:bg-cyan-600 text-white p-4 rounded-full shadow-xl transition-transform transform hover:scale-110"
