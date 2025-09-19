@@ -62,7 +62,6 @@ app.use(
   })
 );
 
-
 // Serve upload folder
 app.use('/upload', express.static(path.join(__dirname, 'upload')));
 // API routes
@@ -83,6 +82,7 @@ app.use('/api', myPostRouter);
 app.use('/api', deletePostRouter);
 app.use('/api', getForEditPostRouter);
 app.use('/api', updatePostRoute);
+console.log('NODE_ENV:', process.env.NODE_ENV);
 
 // Connect DB and start server
 mongoose
