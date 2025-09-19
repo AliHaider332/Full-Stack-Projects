@@ -83,7 +83,6 @@ app.use('/api', deletePostRouter);
 app.use('/api', getForEditPostRouter);
 app.use('/api', updatePostRoute);
 console.log('NODE_ENV:', process.env.NODE_ENV);
-
 // Connect DB and start server
 mongoose
   .connect(process.env.DB_URL)
