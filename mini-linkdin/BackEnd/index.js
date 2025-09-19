@@ -29,8 +29,6 @@ const { getForEditPostRouter } = require('./routers/getForEditPost');
 const { updatePostRoute } = require('./routers/updatePost');
 const { cloudinary, cloudinaryConfig } = require('./util/cloudinary');
 
-app.use('/upload', express.static(path.join(__dirname, 'upload')));
-
 const store = mongoConnect.create({
   mongoUrl: DB_URL,
   collectionName: 'task-Session',
@@ -55,11 +53,6 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: store,
-    cookie: {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-    },
   })
 );
 
@@ -83,15 +76,12 @@ app.use('/api', myPostRouter);
 app.use('/api', deletePostRouter);
 app.use('/api', getForEditPostRouter);
 app.use('/api', updatePostRoute);
-app.use((req, res) => {
-  res.send('404');
-});
 
 // Connect DB and start server
 mongoose
-  .connect(DB_URL)
+  .connect(process.env.DB_URL)
   .then(() => {
     cloudinaryConfig();
-    app.listen(Port);
+    app.listen(process.env.PORT);
   })
   .catch((err) => console.error('DB connection error:', err));

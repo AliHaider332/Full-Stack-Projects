@@ -60,7 +60,6 @@ const ContextProvider = ({ children }) => {
   return (
     <appContext.Provider
       value={{
-        setUser,
         loginStatus,
         setLoginStatus,
         logOut,
