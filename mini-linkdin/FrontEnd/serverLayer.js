@@ -1,6 +1,3 @@
-const server = import.meta.env.VITE_SERVER;
-console.log('Server URL:', server);
-
 export const signInHandling = async (
   name,
   email,
@@ -19,10 +16,12 @@ export const signInHandling = async (
     formatedData.append('password', password.current.value);
     formatedData.append('confirmPassword', confirmPassword.current.value);
     formatedData.append('pic', pic.current.files[0]);
-    const res = await fetch(`${server}/api/user-sign-in`, {
+
+    const res = await fetch(`/api/user-sign-in`, {
       method: 'POST',
       body: formatedData,
     });
+
     const data = await res.json();
     let message = null;
     if (data.errors) {
@@ -39,12 +38,11 @@ export const signInHandling = async (
 
 export const loginHandling = async (email, password) => {
   try {
-    const res = await fetch(`${server}/api/user-login`, {
+    const res = await fetch(`/api/user-login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-
       body: JSON.stringify({
         email: email.current.value,
         password: password.current.value,
@@ -52,8 +50,6 @@ export const loginHandling = async (email, password) => {
       credentials: 'include',
     });
     const data = await res.json();
-    // console.log(data);
-
     return data;
   } catch (error) {
     console.log(error);
@@ -63,14 +59,11 @@ export const loginHandling = async (email, password) => {
 
 export const loginStatusHandling = async () => {
   try {
-    const res = await fetch(`${server}/api/login-status`, {
+    const res = await fetch(`/api/login-status`, {
       method: 'GET',
       credentials: 'include',
     });
-
     const data = await res.json();
-    console.log(data);
-
     return data;
   } catch (error) {
     console.error('Error fetching login status:', error);
@@ -79,20 +72,20 @@ export const loginStatusHandling = async () => {
 
 export const logoutHandling = async () => {
   try {
-    const res = await fetch(`${server}/api/logout`, {
+    const res = await fetch(`/api/logout`, {
       method: 'DELETE',
       credentials: 'include',
     });
     const data = await res.json();
     return data;
   } catch (error) {
-    console.error('Error fetching login status:', error);
+    console.error('Error fetching logout:', error);
   }
 };
 
 export const accountDetail = async (id) => {
   try {
-    const res = await fetch(`${server}/api/detail`, {
+    const res = await fetch(`/api/detail`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -126,10 +119,12 @@ export const updateProfile = async (
     formatedData.append('password', password);
     formatedData.append('confirmPassword', confirmPassword);
     formatedData.append('pic', pic);
-    const res = await fetch(`${server}/api/update-profile`, {
+
+    const res = await fetch(`/api/update-profile`, {
       method: 'PATCH',
       body: formatedData,
     });
+
     const data = await res.json();
     let message = null;
     if (data.errors) {
@@ -146,7 +141,7 @@ export const updateProfile = async (
 
 export const accountDelete = async (id, password) => {
   try {
-    const res = await fetch(`${server}/api/account-delete`, {
+    const res = await fetch(`/api/account-delete`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -159,25 +154,27 @@ export const accountDelete = async (id, password) => {
     const data = await res.json();
     return data;
   } catch (error) {
-    console.log(err);
-    return err;
+    console.log(error);
+    return error;
   }
 };
 
 export const addPost = async (author, title, description, tags, pic, video) => {
   try {
     const formatedData = new FormData();
-    formatedData.append('author', author),
-      formatedData.append('title', title),
-      formatedData.append('description', description),
-      formatedData.append('tags', tags);
+    formatedData.append('author', author);
+    formatedData.append('title', title);
+    formatedData.append('description', description);
+    formatedData.append('tags', tags);
     if (pic) formatedData.append('postPic', pic);
     if (video) formatedData.append('video', video);
-    const res = await fetch(`${server}/api/add-post`, {
+
+    const res = await fetch(`/api/add-post`, {
       method: 'POST',
       body: formatedData,
       credentials: 'include',
     });
+
     const data = await res.json();
     return data;
   } catch (error) {
@@ -187,16 +184,14 @@ export const addPost = async (author, title, description, tags, pic, video) => {
 
 export const getPost = async () => {
   try {
-    const res = await fetch(`${server}/api/get-post`, {
+    const res = await fetch(`/api/get-post`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-
     const data = await res.json();
-
-    return data.DATA; // return it if you want to use outside
+    return data.DATA;
   } catch (error) {
     console.error('Error fetching post:', error);
   }
@@ -204,7 +199,7 @@ export const getPost = async () => {
 
 export const likePost = async (id, viewerId) => {
   try {
-    const res = await fetch(`${server}/api/like-post`, {
+    const res = await fetch(`/api/like-post`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -214,45 +209,45 @@ export const likePost = async (id, viewerId) => {
         viewerId: viewerId,
       }),
     });
-
     const data = await res.json();
     return data.status;
   } catch (error) {
-    console.error('Error fetching post:', error);
+    console.error('Error liking post:', error);
   }
 };
 
 export const addComment = async (id, viewerId, name, pic, comment) => {
   try {
-    const res = await fetch(`${server}/api/add-comment`, {
+    const res = await fetch(`/api/add-comment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id: id,
-        viewerId: viewerId,
-        name: name,
-        pic: pic,
-        comment: comment,
+        id,
+        viewerId,
+        name,
+        pic,
+        comment,
       }),
     });
+    return await res.json();
   } catch (error) {
-    console.error('Error fetching post:', error);
+    console.error('Error adding comment:', error);
   }
 };
 
 export const updateComment = async (id, c_id, message) => {
   try {
-    const res = await fetch(`${server}/api/update-comment`, {
+    const res = await fetch(`/api/update-comment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id: id,
-        c_id: c_id,
-        message: message, // ✅ include updated message
+        id,
+        c_id,
+        message,
       }),
     });
     const data = await res.json();
@@ -264,27 +259,24 @@ export const updateComment = async (id, c_id, message) => {
 
 export const getComment = async (id, c_id) => {
   try {
-    const res = await fetch(`${server}/api/get-comment`, {
+    const res = await fetch(`/api/get-comment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        id: id,
-        c_id: c_id,
-      }),
+      body: JSON.stringify({ id, c_id }),
     });
     const data = await res.json();
     return data.comment;
   } catch (error) {
-    console.error('Error updating comment:', error);
+    console.error('Error getting comment:', error);
   }
 };
 
 export const commentDelete = async (postId, commentId) => {
   try {
-    const res = await fetch(`${server}/api/delete-comment`, {
-      method: 'POST', // You can also use DELETE with body, but POST is fine
+    const res = await fetch(`/api/delete-comment`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -298,8 +290,7 @@ export const commentDelete = async (postId, commentId) => {
       throw new Error(`Error ${res.status}: Failed to delete comment`);
     }
 
-    const data = await res.json();
-    return data;
+    return await res.json();
   } catch (error) {
     console.error('Error deleting comment:', error);
     return { status: 500, message: 'Something went wrong' };
@@ -308,16 +299,14 @@ export const commentDelete = async (postId, commentId) => {
 
 export const myPost = async (userId) => {
   try {
-    const res = await fetch(`${server}/api/my-post`, {
+    const res = await fetch(`/api/my-post`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ id: userId }),
     });
-
     const data = await res.json();
-
     return data.data;
   } catch (error) {
     console.error('Error fetching user posts:', error);
@@ -327,35 +316,30 @@ export const myPost = async (userId) => {
 
 export const deletePost = async (id) => {
   try {
-    const res = await fetch(`${server}/api/delete-post`, {
+    const res = await fetch(`/api/delete-post`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        id: id,
-      }),
+      body: JSON.stringify({ id }),
     });
-    const data = await res.json();
+    return await res.json();
   } catch (error) {
-    console.error('Error deleting comment:', error);
+    console.error('Error deleting post:', error);
     return { status: 500, message: 'Something went wrong' };
   }
 };
 
 export const getForEditPost = async (id) => {
   try {
-    const res = await fetch(`${server}/api/get-edit-post`, {
+    const res = await fetch(`/api/get-edit-post`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ id }),
     });
-
-    const data = await res.json();
-
-    return data;
+    return await res.json();
   } catch (error) {
     console.error('Error fetching post for edit:', error);
     return { status: 500, message: 'Something went wrong' };
@@ -365,24 +349,20 @@ export const getForEditPost = async (id) => {
 export const updatePost = async (id, title, description, tags, pic, video) => {
   try {
     const formatedData = new FormData();
-
     formatedData.append('id', id);
     formatedData.append('title', title);
     formatedData.append('description', description);
     formatedData.append('tags', tags);
-
     if (pic) formatedData.append('postPic', pic);
     if (video) formatedData.append('video', video);
 
-    const res = await fetch(`${server}/api/update-post`, {
+    const res = await fetch(`/api/update-post`, {
       method: 'PUT',
       body: formatedData,
       credentials: 'include',
     });
 
-    const data = await res.json();
-
-    return data;
+    return await res.json();
   } catch (error) {
     console.error('Error updating post:', error);
     return { status: 500, message: 'Something went wrong' };
