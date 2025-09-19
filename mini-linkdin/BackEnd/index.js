@@ -53,8 +53,15 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: store,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // true on Vercel
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // required for cross-origin
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
   })
 );
+
 
 // Serve upload folder
 app.use('/upload', express.static(path.join(__dirname, 'upload')));
